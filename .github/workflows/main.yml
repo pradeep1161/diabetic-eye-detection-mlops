@@ -25,6 +25,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
+      # --- NEW: Authenticate with Google Drive and Pull Data ---
       - name: Authenticate DVC with Google Drive
         env:
           GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
@@ -38,8 +39,8 @@ jobs:
       - name: Pull Data from DVC Remote
         run: dvc pull -r myremote
 
-      - name: List Files in Workspace
-        run: ls -R # A debugging step to confirm data was pulled
+      - name: List Files to Verify Data
+        run: ls -R # This helps confirm the data was downloaded
 
       - name: Run Automated Tests
         run: |
