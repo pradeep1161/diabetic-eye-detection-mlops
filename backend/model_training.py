@@ -7,6 +7,10 @@ from sklearn.metrics import accuracy_score
 from PIL import Image
 
 def validate_dataset(directory):
+    """
+    Scans a directory of images to check for corruption and duplicates.
+    Returns True if the dataset is valid, False otherwise.
+    """
     print(f"\n--- Starting Validation for: {directory} ---")
     stats, seen_hashes, is_valid = [], {}, True
     for class_name in sorted(os.listdir(directory)):
@@ -74,9 +78,9 @@ if __name__ == "__main__":
         'oct': {'type': 'oct', 'dataset_path': '../dataset/oct', 'experiment_name': 'Diabetic Eye - OCT', 'registered_model_name': 'oct-model', 'classes': ['normal', 'macular_edema']}
     }
     config = model_configs[args.type]
-    
+
     # The DVC pull is now handled by the GitHub Actions workflow, so it is removed from this script.
-    
+
     if validate_dataset(os.path.join(config['dataset_path'], 'train')) and validate_dataset(os.path.join(config['dataset_path'], 'validation')):
         print(f"\n--- Proceeding with training for model type: {args.type.upper()} ---")
         trainer = EyeDiseaseModelTrainer(config); trainer.prepare_data(); trainer.build_model(); trainer.train()

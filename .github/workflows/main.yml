@@ -29,15 +29,17 @@ jobs:
         env:
           GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
         run: |
-          # Use Python for robustly handling the JSON secret
+          # This command securely creates the credentials file from the GitHub Secret
           echo "$GDRIVE_CREDENTIALS_DATA" > gdrive-credentials.json
-          python -c "import json; from dvc.api.scm import SCM; scm = SCM('.'); creds = json.load(open('gdrive-credentials.json')); scm.config.set('remote', 'myremote', 'gdrive_service_account_json_file_path', 'gdrive-credentials.json')"
+          
+          # Configure DVC to use the credentials file
+          dvc remote modify myremote gdrive_service_account_json_file_path gdrive-credentials.json
 
       - name: Pull Data from DVC Remote
         run: dvc pull -r myremote
 
       - name: List Files in Workspace
-        run: ls -R
+        run: ls -R # A debugging step to confirm data was pulled
 
       - name: Run Automated Tests
         run: |
