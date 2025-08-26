@@ -25,6 +25,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
+      # --- NEW: Authenticate with Google Drive and Pull Data ---
+      - name: Authenticate DVC with Google Drive
+        env:
+          GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
+        run: |
+          # This command securely creates the credentials file from the GitHub Secret
+          echo "$GDRIVE_CREDENTIALS_DATA" > gdrive-credentials.json
+          
+          # Configure DVC to use the credentials
+          dvc remote modify myremote gdrive_service_account_json_file_path gdrive-credentials.json
+
+      - name: Pull Data from DVC Remote
+        run: dvc pull -r myremote
+
       - name: Run Automated Tests
         run: |
           cd backend
@@ -34,16 +48,14 @@ jobs:
         run: |
           cd backend
           mlflow server --host 127.0.0.1 --port 5000 --backend-store-uri file:./mlruns &
-          sleep 5 # Give server time to start
+          sleep 5
 
       - name: Train Fundus Model
         env:
           MLFLOW_TRACKING_URI: http://127.0.0.1:5000
-          CI: "true"
         run: python backend/model_training.py --type fundus
 
       - name: Train OCT Model
         env:
           MLFLOW_TRACKING_URI: http://127.0.0.1:5000
-          CI: "true"
         run: python backend/model_training.py --type oct
