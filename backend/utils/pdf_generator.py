@@ -9,9 +9,7 @@ from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 
 class PDFGenerator:
     def __init__(self, reports_dir):
-        self.reports_dir = reports_dir
-        self.styles = getSampleStyleSheet()
-        self.custom_styles = self._create_custom_styles()
+        self.reports_dir = reports_dir; self.styles = getSampleStyleSheet(); self.custom_styles = self._create_custom_styles()
     
     def _create_custom_styles(self):
         custom = {}

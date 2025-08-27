@@ -1,2 +1,28 @@
-venv/ 
-dataset/ 
+# Python virtual environment
+venv/
+
+# Large data folders tracked by DVC
+dataset/
+
+# Temporary and generated files
+backend/temp/
+reports/
+backend/models/
+
+# Secret files
+backend/.env
+gdrive-credentials.json
+
+# Python cache files
+__pycache__/
+backend/__pycache__/
+backend/utils/__pycache__/
+backend/tests/__pycache__/
+
+# MLflow local storage
+backend/mlruns/
+
+# IDE and OS specific files
+.vscode/
+.idea/
+.DS_Store

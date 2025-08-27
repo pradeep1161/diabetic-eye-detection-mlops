@@ -60,18 +60,10 @@ class EyeDiseaseModelTrainer:
             for layer in self.base_model.layers[:-30]: layer.trainable = False
             self.model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5), loss='categorical_crossentropy', metrics=['accuracy'])
             self.model.fit(self.train_generator, epochs=fine_tune_epochs, validation_data=self.val_generator, verbose=1)
-            
-            # --- Final Evaluation ---
-            predictions = self.model.predict(self.val_generator)
-            y_pred = np.argmax(predictions, axis=1)
-            # CORRECTED: Use .labels to get the ground truth in the correct order
-            y_true = self.val_generator.labels 
-            
-            accuracy = accuracy_score(y_true, y_pred)
-            mlflow.log_metric("val_accuracy", accuracy)
+            predictions = self.model.predict(self.val_generator); y_pred = np.argmax(predictions, axis=1); y_true = self.val_generator.labels
+            accuracy = accuracy_score(y_true, y_pred); mlflow.log_metric("val_accuracy", accuracy)
             mlflow.keras.log_model(self.model, artifact_path="model", registered_model_name=self.config['registered_model_name'])
-            print(f"--- Final Validation Accuracy: {accuracy:.4f} ---")
-            print("--- MLflow Run Complete ---")
+            print(f"--- Final Validation Accuracy: {accuracy:.4f} ---"); print("--- MLflow Run Complete ---")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Validate and train an eye disease model.")
@@ -82,10 +74,12 @@ if __name__ == "__main__":
         'oct': {'type': 'oct', 'dataset_path': '../dataset/oct', 'experiment_name': 'Diabetic Eye - OCT', 'registered_model_name': 'oct-model', 'classes': ['normal', 'macular_edema']}
     }
     config = model_configs[args.type]
-    
-    # The DVC pull is handled by the GitHub Actions workflow, so it is removed from this script.
-    
-    if validate_dataset(os.path.join(config['dataset_path'], 'train')) and validate_dataset(os.path.join(config['dataset_path'], 'validation')):
+    train_path = os.path.join(config['dataset_path'], 'train')
+    validation_path = os.path.join(config['dataset_path'], 'validation')
+    if not os.path.exists(train_path) or not os.path.exists(validation_path):
+        print(f"FATAL ERROR: Data directory not found at {os.path.abspath(config['dataset_path'])}")
+        sys.exit(1)
+    if validate_dataset(train_path) and validate_dataset(validation_path):
         print(f"\n--- Proceeding with training for model type: {args.type.upper()} ---")
         trainer = EyeDiseaseModelTrainer(config); trainer.prepare_data(); trainer.build_model(); trainer.train()
     else:

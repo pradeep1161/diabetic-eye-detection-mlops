@@ -35,12 +35,11 @@ jobs:
       - name: Pull Data from DVC Remote
         run: dvc pull -r myremote
 
-      # --- NEW: Checkout the data to the workspace ---
       - name: Checkout Data
         run: dvc checkout
 
       - name: List Files to Verify Data
-        run: ls -R # This helps confirm the data was downloaded and checked out
+        run: ls -R
 
       - name: Run Automated Tests
         run: |
