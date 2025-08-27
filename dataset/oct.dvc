@@ -1,0 +1,6 @@
+outs:
+- md5: 8d4330972593d641c7513d49dfb2cf65.dir
+  size: 372269545
+  nfiles: 5300
+  hash: md5
+  path: oct

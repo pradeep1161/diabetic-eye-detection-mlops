@@ -1,0 +1,6 @@
+outs:
+- md5: 3b90733e70a2d62c8aad7c12539a2ae7.dir
+  size: 3108529009
+  nfiles: 15173
+  hash: md5
+  path: fundus

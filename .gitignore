@@ -2,7 +2,7 @@
 venv/
 
 # Large data folders tracked by DVC
-dataset/
+
 
 # Temporary and generated files
 backend/temp/
