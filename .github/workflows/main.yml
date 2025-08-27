@@ -1,61 +1,86 @@
+# This name will appear in the "Actions" tab of your GitHub repository.
 name: MLOps CI/CT Pipeline
 
+# This section defines when the workflow will run.
 on:
+  # Run the workflow automatically on every push to the 'main' branch.
   push:
     branches: [ main ]
+  # Allow the workflow to be run manually from the GitHub Actions UI.
   workflow_dispatch:
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel.
 jobs:
+  # This workflow contains a single job called "validate-and-train".
   validate-and-train:
+    # The type of runner that the job will run on. We use the latest Ubuntu version.
     runs-on: ubuntu-latest
+    
+    # A job is a sequence of steps.
     steps:
+      # Step 1: Check out your repository under $GITHUB_WORKSPACE, so your job can access it.
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # Step 2: Set up a specific version of Python.
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
+      # Step 3: Set up the DVC command-line tool.
       - name: Set up DVC
         uses: iterative/setup-dvc@v1
 
+      # Step 4: Install all the Python packages listed in your requirements file.
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
-- name: Authenticate DVC with Google Drive
-    env:
-      GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
-    run: |
-      echo "$GDRIVE_CREDENTIALS_DATA" > gdrive-credentials.json
-      dvc remote modify myremote gdrive_service_account_json_file_path gdrive-credentials.json
+      # Step 5: Securely authenticate DVC with your Google Drive remote storage.
+      - name: Authenticate DVC with Google Drive
+        env:
+          # This pulls the secret you created in your GitHub repository settings.
+          GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
+        run: |
+          # Create the credentials file from the secret.
+          echo "$GDRIVE_CREDENTIALS_DATA" > gdrive-credentials.json
+          # Configure DVC to use this file for non-interactive login.
+          dvc remote modify myremote gdrive_service_account_json_file_path gdrive-credentials.json
+
+      # Step 6: Download the dataset from Google Drive into the runner's DVC cache.
       - name: Pull Data from DVC Remote
         run: dvc pull -r myremote
 
+      # Step 7: Move the data from the DVC cache into the actual 'dataset/' folder.
       - name: Checkout Data
         run: dvc checkout
 
+      # Step 8: A debugging step to list all files and confirm the data was checked out correctly.
       - name: List Files to Verify Data
         run: ls -R
 
+      # Step 9: Run the automated tests as a quality gate.
       - name: Run Automated Tests
         run: |
           cd backend
           pytest
 
+      # Step 10: Start the MLflow server in the background.
       - name: Start MLflow Tracking Server
         run: |
           cd backend
           mlflow server --host 127.0.0.1 --port 5000 --backend-store-uri file:./mlruns &
-          sleep 5
+          sleep 5 # Give the server a moment to start up.
 
+      # Step 11: Run the training script for the Fundus model.
       - name: Train Fundus Model
         env:
           MLFLOW_TRACKING_URI: http://127.0.0.1:5000
         run: python backend/model_training.py --type fundus
 
+      # Step 12: Run the training script for the OCT model.
       - name: Train OCT Model
         env:
           MLFLOW_TRACKING_URI: http://127.0.0.1:5000
