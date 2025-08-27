@@ -25,16 +25,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
-      - name: Authenticate DVC with Google Drive
-        env:
-          GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
-        run: |
-          # This command securely creates the credentials file from the GitHub Secret
-          echo "$GDRIVE_CREDENTIALS_DATA" > gdrive-credentials.json
-          
-          # Configure DVC to use the credentials file for non-interactive login
-          dvc remote modify myremote gdrive_service_account_json_file_path gdrive-credentials.json
-
+- name: Authenticate DVC with Google Drive
+    env:
+      GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
+    run: |
+      echo "$GDRIVE_CREDENTIALS_DATA" > gdrive-credentials.json
+      dvc remote modify myremote gdrive_service_account_json_file_path gdrive-credentials.json
       - name: Pull Data from DVC Remote
         run: dvc pull -r myremote
 
